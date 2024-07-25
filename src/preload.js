@@ -546,15 +546,15 @@ document.addEventListener("DOMContentLoaded", function () {
     "modelVariantAdditionPairButton"
   );
   modelVariantAdditionPairButton.addEventListener("click", () => {
-    const pairContainer = document.getElementById("modelVariantAddition-container");
+    const pairContainer = document.getElementById(
+      "modelVariantAddition-container"
+    );
     const div = document.createElement("div");
     div.className = "modelVariantAddition-container";
 
     div.innerHTML = `
       <label for="Model">Model Name:</label>
       <input type="text" placeholder="Enter model name" name="Model">
-      <label for="incentive">Incentive:</label>
-      <input type="number" name="incentive" step="0.01">
   `;
     pairContainer.appendChild(div);
   });
@@ -563,7 +563,9 @@ document.addEventListener("DOMContentLoaded", function () {
     "removemodelVariantAdditionPairButton"
   );
   removemodelVariantAdditionPairButton.addEventListener("click", () => {
-    const pairContainer = document.getElementById("modelVariantAddition-container");
+    const pairContainer = document.getElementById(
+      "modelVariantAddition-container"
+    );
     const exchangePairContainers = pairContainer.getElementsByClassName(
       "modelVariantAddition-container"
     );
@@ -897,6 +899,90 @@ document.addEventListener("DOMContentLoaded", function () {
     return checkFile;
   }
 
+  const addVariantField = (type, model) => {
+    let inputFields;
+
+    switch (type) {
+      case "qcCheck":
+        console.log("qcCheck");
+        const list = document.querySelector("#qcInputs .QCInput div");
+        inputFields = `<label style="color: #1f1a17"><input type="checkbox" name="carsFM" class="carsFMInput" value=${model} />${model}</label>`;
+        list.innerHTML += inputFields;
+        break;
+
+      case "perModelDropdown":
+        console.log("perModelDropdown");
+        pairCount++;
+        const perModelPairContainer = document.getElementById(
+          "perModelPairContainer"
+        );
+        const newPairHTML = `
+                    <div class="perModelPairContainer">
+                        <label for="carModel${pairCount}">Car Model:</label>
+                        <select id="carModel${pairCount}">
+                          <option value=${model}>${model}</option>
+                        </select>
+                        <span>specially added variant </span>
+                        <label for="incentive${pairCount}">Incentive:</label>
+                        <input type="number" id="incentive${pairCount}" placeholder="Enter incentive amount">
+                    </div>
+                `;
+        perModelPairContainer.insertAdjacentHTML("beforeend", newPairHTML);
+        break;
+
+      case "perModelDropdown":
+        console.log("perModelDropdown");
+        specialCarPairCount++;
+        const specialCarPairContainer = document.getElementById(
+          "specialCarPairContainer"
+        );
+
+        const newPairSpecialcarHTML = `
+                <div class="specialCarPairContainer">
+                    <label for="SCcarModel${specialCarPairCount}">Car Model:</label>
+                    <select id="SCcarModel${specialCarPairCount}">
+                        <option value=${model}>${model}</option>
+                    </select>
+                    <label for="SCincentive${specialCarPairCount}">Incentive:</label>
+                    <input type="number" id="SCincentive${specialCarPairCount}" placeholder="Enter incentive amount">
+                </div>
+            `;
+
+        specialCarPairContainer.insertAdjacentHTML(
+          "beforeend",
+          newPairSpecialcarHTML
+        );
+        break;
+
+      default:
+        inputFields = "";
+        break;
+    }
+  };
+
+
+  //variant addition
+  const VariantFormBtn = document.getElementById("variantFormBtn");
+  VariantFormBtn.addEventListener("click", (e) => {
+    const modelVariantAdditioncontainer = document.getElementsByClassName(
+      "modelVariantAddition-container"
+    );
+    for (let i = 0; i < modelVariantAdditioncontainer.length; i++) {
+      const modelVariantpairContainer = modelVariantAdditioncontainer[i];
+      const ModelInput = modelVariantpairContainer.querySelector(
+        'input[name="Model"]'
+      );
+      const ModelName = ModelInput.value;
+      ModelAddition.push(ModelName);
+    }
+
+    ModelAddition.forEach((model) => {
+      addVariantField("qcCheck", model);
+      addVariantField("perModelDropdown", model);
+    });
+    ipcRenderer.send("newVariantlist", newVariantlist);
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -1084,25 +1170,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         NumberPairs.push(NumberPair);
-      }
-
-
-      const modelVariantAdditioncontainer = document.getElementsByClassName(
-        "modelVariantAddition-container"
-      );
-      for (let i = 0; i < modelVariantAdditioncontainer.length; i++) {
-        const modelVariantpairContainer = modelVariantAdditioncontainer[i];
-        const ModelInput = modelVariantpairContainer.querySelector(
-          'input[name="Model"]'
-        );
-        const incentiveInput = modelVariantpairContainer.querySelector(
-          'input[name="incentive"]'
-        );
-        const exchangePair = {
-          ExchangeNumber: ModelInput.value,
-          incentive: incentiveInput.value,
-        };
-        ModelAddition.push(exchangePair);
       }
 
       const exchangeType = document.getElementById("exchangeSelect").value;
